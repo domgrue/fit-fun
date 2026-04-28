@@ -240,6 +240,8 @@
       document.getElementById("rechner").style.display = "block";
 
       mixedInputs.style.display = (k === "mixed") ? "block" : "none";
+
+      generiereTabelle(); // Tabelle sofort aktualisieren
     }
 
     function goBack() {
@@ -318,9 +320,20 @@
       return true;
     }
 
-    document.getElementById('anzTi').addEventListener('input', liveCheck);
-    document.getElementById('anzTu').addEventListener('input', liveCheck);
-    document.getElementById('disziplin').addEventListener('change', liveCheck);
+    document.getElementById('anzTi').addEventListener('input', () => {
+      liveCheck();
+      generiereTabelle();
+    });
+
+    document.getElementById('anzTu').addEventListener('input', () => {
+      liveCheck();
+      generiereTabelle();
+    });
+
+    document.getElementById('disziplin').addEventListener('change', () => {
+      liveCheck();
+      generiereTabelle();
+    });
 
     function berechneNote() {
       const dis = document.getElementById('disziplin').value;
