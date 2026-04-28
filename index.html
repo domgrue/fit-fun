@@ -80,8 +80,8 @@ input[type=number]{
   border-radius:var(--r);
   border:1px solid #ccc;
   margin-top:.35rem;
-  box-sizing:border-box;   /* <<< WICHTIG: verhindert Überbreite */
-  max-width:100%;          /* <<< WICHTIG */
+  box-sizing:border-box;
+  max-width:100%;
 }
 
 /* Fieldsets */
@@ -270,8 +270,7 @@ function mixedOK(){
  const err=document.getElementById("err");
  const dis=document.getElementById("disziplin").value;
 
- /* WICHTIG:
-    Solange eines der Felder leer ist → KEINE Fehlermeldung */
+ /* Solange eines der Felder leer ist → KEINE Fehlermeldung */
  if(F==="" || M===""){
    err.textContent="";
    return false;
@@ -323,8 +322,34 @@ function genTable(){
  const dis=document.getElementById("disziplin").value;
  const t=document.getElementById("table");
 
- let minP,maxP;
+ let F=document.getElementById("f").value;
+ let M=document.getElementById("m").value;
 
+ /* NEU: Wenn beide leer → Hinweis anzeigen */
+ if(F==="" && M===""){
+   t.innerHTML = `<div class='error'>Bitte Anzahl Personen eingeben</div>`;
+   return;
+ }
+
+ /* Leere Felder als 0 interpretieren */
+ F = (F === "") ? 0 : parseInt(F);
+ M = (M === "") ? 0 : parseInt(M);
+
+ const total = F + M;
+
+ /* Mixed-Grenzen prüfen */
+ if(kat==="mixed"){
+   if(total < MIN[dis]){
+     t.innerHTML = `<div class='error'>Mindestens ${MIN[dis]} Personen erfassen</div>`;
+     return;
+   }
+   if(total > MAX[dis]){
+     t.innerHTML = `<div class='error'>Maximal ${MAX[dis]} Personen</div>`;
+     return;
+   }
+ }
+
+ /* Punktebereiche */
  const PB={
    "1a":{d:[46,81],h:[54,98]},
    "1b":{d:[71,163],h:[77,192]},
@@ -334,31 +359,26 @@ function genTable(){
    "3b":{d:[83,131],h:[92,153]}
  };
 
+ let minP, maxP;
+
  if(kat==="damen"){ minP=PB[dis].d[0]; maxP=PB[dis].d[1]; }
  else if(kat==="herren"){ minP=PB[dis].h[0]; maxP=PB[dis].h[1]; }
  else{
-   let F=document.getElementById("f").value;
-   let M=document.getElementById("m").value;
-   if(F===""||M===""){ t.innerHTML=""; return; }
-   F=parseInt(F); M=parseInt(M);
-   const total=F+M;
-   if(total<MIN[dis]){ t.innerHTML=`<div class='error'>Mindestens ${MIN[dis]} Personen erfassen</div>`; return; }
-   if(total>MAX[dis]){ t.innerHTML=`<div class='error'>Maximal ${MAX[dis]} Personen</div>`; return; }
-   minP=PB[dis].d[0];
-   maxP=PB[dis].h[1];
+   minP = PB[dis].d[0];
+   maxP = PB[dis].h[1];
  }
 
+ /* Tabelle generieren */
  let html="<table><tr><th>Punkte</th><th>Note</th></tr>";
  for(let p=maxP;p>=minP;p--){
    let n;
    if(kat==="damen") n=FORM[dis].d(p);
    else if(kat==="herren") n=FORM[dis].h(p);
-   else{
-     const F=parseInt(document.getElementById("f").value||0);
-     const M=parseInt(document.getElementById("m").value||0);
-     n=FORM[dis].m(p,F,M);
+   else n=FORM[dis].m(p,F,M);
+
+   if(n>=0 && n<=10){
+     html+=`<tr><td>${p}</td><td>${n.toFixed(2)}</td></tr>`;
    }
-   if(n>=0&&n<=10) html+=`<tr><td>${p}</td><td>${n.toFixed(2)}</td></tr>`;
  }
  html+="</table>";
  t.innerHTML=html;
