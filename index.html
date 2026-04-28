@@ -6,26 +6,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+/* --- DESIGN --- */
 :root{
-  --p:#d62828;      /* Sportliches Rot */
-  --pd:#a61e1e;     /* Dunkleres Rot */
+  --p:#d62828;
+  --pd:#a61e1e;
   --bg:#f7f7f7;
   --card:#ffffff;
+  --text:#222;
+  --error:#b00020;
+  --ok:#2e7d32;
+  --warn:#f9a825;
   --r:14px;
   --sh:0 4px 12px rgba(0,0,0,0.08);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 
-/* Layout */
+@media (prefers-color-scheme: dark) {
+  :root{
+    --bg:#1e1e1e;
+    --card:#2a2a2a;
+    --text:#f2f2f2;
+    --sh:0 4px 12px rgba(0,0,0,0.5);
+  }
+}
+
 body{
   margin:0;
   padding:1rem;
   background:var(--bg);
+  color:var(--text);
   max-width:650px;
   margin-inline:auto;
 }
 
-/* Cards */
 .card{
   background:var(--card);
   padding:1.2rem;
@@ -34,15 +47,12 @@ body{
   margin-bottom:1.2rem;
 }
 
-/* Headings */
 h1{
   margin:0 0 .5rem 0;
   font-size:1.6rem;
   font-weight:700;
-  color:#222;
 }
 
-/* Buttons */
 button{
   background:var(--p);
   color:#fff;
@@ -71,50 +81,46 @@ button:hover{ background:var(--pd); }
   margin-top:1rem;
 }
 
-/* Inputs */
 select,
 input[type=number]{
   width:100%;
   padding:.55rem;
   font-size:1rem;
   border-radius:var(--r);
-  border:1px solid #ccc;
+  border:2px solid #ccc;
   margin-top:.35rem;
   box-sizing:border-box;
   max-width:100%;
+  transition:0.2s;
 }
 
-/* Fieldsets */
 legend{
   font-weight:600;
   margin-bottom:.3rem;
 }
 
-/* Output */
 .output{
   font-size:1.3rem;
   font-weight:700;
   padding:.8rem;
   border-radius:var(--r);
   background:#ffe5e5;
-  color:#a61e1e;
+  color:var(--pd);
   margin-top:.7rem;
   text-align:center;
 }
 
-/* Errors */
 .error{
-  color:#b00020;
+  color:var(--error);
   font-weight:600;
   margin-top:.25rem;
 }
 
-/* Table */
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:1rem;
-  background:#fff;
+  background:var(--card);
   border-radius:var(--r);
   overflow:hidden;
   box-shadow:var(--sh);
@@ -131,7 +137,6 @@ td{
   border-bottom:1px solid #e0e0e0;
 }
 
-/* Mixed fields under each other */
 .row{
   display:flex;
   flex-direction:column;
@@ -142,7 +147,7 @@ td{
 
 <body>
 
-<!-- START -->
+<!-- STARTSCREEN -->
 <div id="startscreen">
   <div class="card">
     <h1>Fit+Fun Notenrechner</h1>
@@ -165,7 +170,7 @@ td{
   </div>
 
   <div class="card">
-    <form onsubmit="event.preventDefault();calc();">
+    <form onsubmit="event.preventDefault();">
 
       <fieldset>
         <legend>Disziplin</legend>
@@ -201,7 +206,8 @@ td{
         <input id="punkte" type="number" step="0.1">
       </fieldset>
 
-      <button type="submit">Note berechnen</button>
+      <button type="button" onclick="resetInputs()">Eingaben löschen</button>
+
       <div id="out" class="output">Note: –</div>
 
       <button type="button" id="toggle" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
@@ -214,6 +220,7 @@ td{
 <script>
 let kat=null,tableVisible=false;
 
+/* --- FORMELN & GRENZEN --- */
 const MIN={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":6,"3b":6 };
 const MAX={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":4,"3b":4 };
 
@@ -226,23 +233,26 @@ const FORM={
  "3b":{d:d=>(d-34)/9.7,h:d=>(d-31)/12.2,m:(d,F,M)=>((F*(d-34)/9.7)+(M*(d-31)/12.2))/(F+M)}
 };
 
-function reset(){
+/* --- RESET --- */
+function resetInputs(){
  document.getElementById("punkte").value="";
- document.getElementById("out").textContent="Note: –";
- document.getElementById("err").textContent="";
  document.getElementById("f").value="";
  document.getElementById("m").value="";
+ document.getElementById("err").textContent="";
+ document.getElementById("out").textContent="Note: –";
  document.getElementById("table").innerHTML="";
  document.getElementById("table").style.display="none";
  tableVisible=false;
  document.getElementById("toggle").textContent="Punkte‑Tabelle einblenden";
+ validateMixed();
 }
 
+/* --- START / BACK --- */
 function start(k){
  kat=k;
  document.getElementById("startscreen").style.display="none";
  document.getElementById("rechner").style.display="block";
- reset();
+ resetInputs();
  document.getElementById("disziplin").value="1a";
  document.getElementById("mixedBox").style.display=(k==="mixed")?"block":"none";
 }
@@ -250,10 +260,11 @@ function start(k){
 function back(){
  document.getElementById("rechner").style.display="none";
  document.getElementById("startscreen").style.display="block";
- reset();
+ resetInputs();
  kat=null;
 }
 
+/* --- TOGGLE TABLE --- */
 function toggleTable(){
  tableVisible=!tableVisible;
  const t=document.getElementById("table");
@@ -262,39 +273,62 @@ function toggleTable(){
  else{ t.style.display="none"; b.textContent="Punkte‑Tabelle einblenden"; }
 }
 
-function mixedOK(){
- if(kat!=="mixed") return true;
+/* --- LIVE VALIDIERUNG MIXED --- */
+function validateMixed(){
+ if(kat!=="mixed") return;
 
- const F=document.getElementById("f").value;
- const M=document.getElementById("m").value;
+ const F=document.getElementById("f");
+ const M=document.getElementById("m");
  const err=document.getElementById("err");
  const dis=document.getElementById("disziplin").value;
 
- /* Solange eines der Felder leer ist → KEINE Fehlermeldung */
- if(F==="" || M===""){
-   err.textContent="";
-   return false;
- }
+ let f=F.value===""?null:parseInt(F.value);
+ let m=M.value===""?null:parseInt(M.value);
 
- const f=parseInt(F);
- const m=parseInt(M);
+ F.style.borderColor="#ccc";
+ M.style.borderColor="#ccc";
+ err.textContent="";
+
+ if(f===null && m===null) return;
+
+ if(f===null) f=0;
+ if(m===null) m=0;
+
  const total=f+m;
 
- if(total>MAX[dis]){ err.textContent=`Maximal ${MAX[dis]} Personen`; return false; }
- if(total<MIN[dis]){ err.textContent=`Mindestens ${MIN[dis]} Personen erfassen`; return false; }
+ if(total>MAX[dis]){
+   err.textContent=`Maximal ${MAX[dis]} Personen`;
+   F.style.borderColor="var(--error)";
+   M.style.borderColor="var(--error)";
+   return;
+ }
 
+ if(total<MIN[dis]){
+   err.textContent=`Mindestens ${MIN[dis]} Personen erfassen`;
+   F.style.borderColor="var(--warn)";
+   M.style.borderColor="var(--warn)";
+   return;
+ }
+
+ F.style.borderColor="var(--ok)";
+ M.style.borderColor="var(--ok)";
  err.textContent="";
- return true;
 }
 
-document.getElementById("f").addEventListener("input",()=>{ mixedOK(); if(tableVisible) genTable(); });
-document.getElementById("m").addEventListener("input",()=>{ mixedOK(); if(tableVisible) genTable(); });
-document.getElementById("disziplin").addEventListener("change",()=>{ reset(); if(tableVisible) genTable(); });
+/* --- LIVE NOTE (mit Max/Min) --- */
+document.getElementById("punkte").addEventListener("input",()=>calc());
+document.getElementById("f").addEventListener("input",()=>{ validateMixed(); if(tableVisible) genTable(); });
+document.getElementById("m").addEventListener("input",()=>{ validateMixed(); if(tableVisible) genTable(); });
+document.getElementById("disziplin").addEventListener("change",()=>{ resetInputs(); });
 
 function calc(){
  const dis=document.getElementById("disziplin").value;
  const d=parseFloat(document.getElementById("punkte").value);
  const out=document.getElementById("out");
+
+ if(isNaN(d)){ out.textContent="Note: –"; return; }
+
+ let n;
 
  if(kat==="mixed"){
    let F=document.getElementById("f").value;
@@ -306,18 +340,19 @@ function calc(){
    F=parseInt(F); M=parseInt(M);
    const total=F+M;
 
-   if(total<MIN[dis]){ out.textContent=`Note: Mindestens ${MIN[dis]} Personen erfassen`; return; }
-   if(total>MAX[dis]){ out.textContent=`Note: Maximal ${MAX[dis]} Personen`; return; }
+   if(total<MIN[dis] || total>MAX[dis]){ out.textContent="Note: –"; return; }
 
-   const n=FORM[dis].m(d,F,M);
-   out.textContent=`Note: ${n.toFixed(2)}`;
-   return;
+   n=FORM[dis].m(d,F,M);
+ } else {
+   n = (kat==="damen") ? FORM[dis].d(d) : FORM[dis].h(d);
  }
 
- if(kat==="damen") out.textContent=`Note: ${FORM[dis].d(d).toFixed(2)}`;
- else out.textContent=`Note: ${FORM[dis].h(d).toFixed(2)}`;
+ if(n > 10) out.textContent="Note: 10.00 (Maximalnote)";
+ else if(n < 3) out.textContent="Note: 3.00 (Minimalnote)";
+ else out.textContent=`Note: ${n.toFixed(2)}`;
 }
 
+/* --- PUNKTE-TABELLE (robust & korrekt) --- */
 function genTable(){
  const dis=document.getElementById("disziplin").value;
  const t=document.getElementById("table");
@@ -325,19 +360,16 @@ function genTable(){
  let F=document.getElementById("f").value;
  let M=document.getElementById("m").value;
 
- /* NEU: Wenn beide leer → Hinweis anzeigen */
- if(F==="" && M===""){
+ if(kat==="mixed" && F==="" && M===""){
    t.innerHTML = `<div class='error'>Bitte Anzahl Personen eingeben</div>`;
    return;
  }
 
- /* Leere Felder als 0 interpretieren */
  F = (F === "") ? 0 : parseInt(F);
  M = (M === "") ? 0 : parseInt(M);
 
  const total = F + M;
 
- /* Mixed-Grenzen prüfen */
  if(kat==="mixed"){
    if(total < MIN[dis]){
      t.innerHTML = `<div class='error'>Mindestens ${MIN[dis]} Personen erfassen</div>`;
@@ -349,37 +381,46 @@ function genTable(){
    }
  }
 
- /* Punktebereiche */
- const PB={
-   "1a":{d:[46,81],h:[54,98]},
-   "1b":{d:[71,163],h:[77,192]},
-   "2a":{d:[122,189],h:[136,230]},
-   "2b":{d:[72,145],h:[77,182]},
-   "3a":{d:[105,163],h:[118,198]},
-   "3b":{d:[83,131],h:[92,153]}
- };
-
- let minP, maxP;
-
- if(kat==="damen"){ minP=PB[dis].d[0]; maxP=PB[dis].d[1]; }
- else if(kat==="herren"){ minP=PB[dis].h[0]; maxP=PB[dis].h[1]; }
- else{
-   minP = PB[dis].d[0];
-   maxP = PB[dis].h[1];
- }
-
- /* Tabelle generieren */
  let html="<table><tr><th>Punkte</th><th>Note</th></tr>";
- for(let p=maxP;p>=minP;p--){
-   let n;
-   if(kat==="damen") n=FORM[dis].d(p);
-   else if(kat==="herren") n=FORM[dis].h(p);
-   else n=FORM[dis].m(p,F,M);
 
-   if(n>=0 && n<=10){
-     html+=`<tr><td>${p}</td><td>${n.toFixed(2)}</td></tr>`;
-   }
+ /* --- 1) ALLE NOTES VORBERECHNEN --- */
+ let arr = [];
+
+ for(let p=0; p<=300; p++){
+   let rawN;
+
+   if(kat==="damen") rawN = FORM[dis].d(p);
+   else if(kat==="herren") rawN = FORM[dis].h(p);
+   else rawN = FORM[dis].m(p,F,M);
+
+   arr.push({p:p, raw:rawN});
  }
+
+ /* --- 2) STARTPUNKT FINDEN: erster raw >= 10 --- */
+ let startIndex = arr.findIndex(e => e.raw >= 10);
+
+ if(startIndex === -1){
+   t.innerHTML = "<div class='error'>Keine gültigen Werte gefunden</div>";
+   return;
+ }
+
+ let startP = arr[startIndex].p;
+
+ /* --- 3) TABELLE VON startP NACH UNTEN BIS 3.00 --- */
+ for(let x = startP; x >= 0; x--){
+   let rawN = arr[x].raw;
+
+   if(rawN < 0) break;
+
+   let n = rawN;
+   if(n > 10) n = 10;
+   if(n < 3) n = 3;
+
+   html += `<tr><td>${x}</td><td>${n.toFixed(2)}</td></tr>`;
+
+   if(n === 3) break;
+ }
+
  html+="</table>";
  t.innerHTML=html;
 }
