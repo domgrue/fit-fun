@@ -221,17 +221,18 @@
           Note: –
         </div>
 
-        <button type="button" id="showTableBtn">Punkte‑Tabelle anzeigen</button>
-        <div id="tableContainer"></div>
+        <!-- NEW: Toggle Button -->
+        <button type="button" id="toggleTableBtn" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
+
+        <div id="tableContainer" style="display:none;"></div>
 
       </form>
     </div>
   </div>
 
   <script>
-    /* --- Startscreen Logik --- */
-
     let aktiveKategorie = null;
+    let tableVisible = false;
 
     function startWithCategory(k) {
       aktiveKategorie = k;
@@ -241,7 +242,7 @@
 
       mixedInputs.style.display = (k === "mixed") ? "block" : "none";
 
-      generiereTabelle(); // Tabelle sofort aktualisieren
+      generiereTabelle();
     }
 
     function goBack() {
@@ -249,7 +250,22 @@
       document.getElementById("startscreen").style.display = "block";
     }
 
-    /* --- Originale Logik (angepasst auf aktiveKategorie) --- */
+    function toggleTable() {
+      tableVisible = !tableVisible;
+
+      const container = document.getElementById("tableContainer");
+      const btn = document.getElementById("toggleTableBtn");
+
+      if (tableVisible) {
+        container.style.display = "block";
+        btn.textContent = "Punkte‑Tabelle ausblenden";
+      } else {
+        container.style.display = "none";
+        btn.textContent = "Punkte‑Tabelle einblenden";
+      }
+    }
+
+    /* --- Restliche Logik bleibt unverändert, nur Auto‑Update ergänzt --- */
 
     const MAX_TEILNEHMER = {
       "1a": 4,
@@ -404,8 +420,6 @@
       html += "</table>";
       tableContainer.innerHTML = html;
     }
-
-    document.getElementById('showTableBtn').addEventListener('click', generiereTabelle);
 
     // PWA Registrierung
     if ("serviceWorker" in navigator) {
