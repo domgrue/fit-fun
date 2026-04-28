@@ -72,13 +72,16 @@ button:hover{ background:var(--pd); }
 }
 
 /* Inputs */
-select,input[type=number]{
+select,
+input[type=number]{
   width:100%;
   padding:.55rem;
   font-size:1rem;
   border-radius:var(--r);
   border:1px solid #ccc;
   margin-top:.35rem;
+  box-sizing:border-box;   /* <<< WICHTIG: verhindert Überbreite */
+  max-width:100%;          /* <<< WICHTIG */
 }
 
 /* Fieldsets */
