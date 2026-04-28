@@ -107,7 +107,6 @@
       margin-top: 0.3rem;
     }
 
-    /* Optimierte Tabelle */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -153,7 +152,6 @@
 </head>
 <body>
 
-  <!-- STARTSCREEN -->
   <div id="startscreen">
     <div class="card">
       <h1>Fit+Fun Notenrechner</h1>
@@ -167,7 +165,6 @@
     </div>
   </div>
 
-  <!-- RECHNER -->
   <div id="rechner" style="display:none;">
 
     <button id="backBtn" class="btn-small" onclick="goBack()">Kategorie wechseln</button>
@@ -192,7 +189,6 @@
           </select>
         </fieldset>
 
-        <!-- Mixed Inputs -->
         <div id="mixedInputs" style="display:none;">
           <fieldset>
             <legend>Mixed (Anzahl Personen erfassen)</legend>
@@ -221,7 +217,6 @@
           Note: –
         </div>
 
-        <!-- Toggle Button -->
         <button type="button" id="toggleTableBtn" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
 
         <div id="tableContainer" style="display:none;"></div>
@@ -234,7 +229,6 @@
     let aktiveKategorie = null;
     let tableVisible = false;
 
-    /* Mindestpersonen pro Disziplin */
     const MIN_TEILNEHMER = {
       "1a": 4,
       "1b": 6,
@@ -243,55 +237,6 @@
       "3a": 6,
       "3b": 6
     };
-
-    function resetAll() {
-      document.getElementById("punkte").value = "";
-      document.getElementById("output").textContent = "Note: –";
-      document.getElementById("errorMsg").textContent = "";
-      document.getElementById("anzTi").value = "";
-      document.getElementById("anzTu").value = "";
-      document.getElementById("tableContainer").innerHTML = "";
-      document.getElementById("tableContainer").style.display = "none";
-      tableVisible = false;
-      document.getElementById("toggleTableBtn").textContent = "Punkte‑Tabelle einblenden";
-    }
-
-    function startWithCategory(k) {
-      aktiveKategorie = k;
-
-      document.getElementById("startscreen").style.display = "none";
-      document.getElementById("rechner").style.display = "block";
-
-      resetAll();
-
-      document.getElementById("disziplin").value = "1a";
-      mixedInputs.style.display = (k === "mixed") ? "block" : "none";
-
-      generiereTabelle();
-    }
-
-    function goBack() {
-      document.getElementById("rechner").style.display = "none";
-      document.getElementById("startscreen").style.display = "block";
-      resetAll();
-    }
-
-    function toggleTable() {
-      tableVisible = !tableVisible;
-
-      const container = document.getElementById("tableContainer");
-      const btn = document.getElementById("toggleTableBtn");
-
-      if (tableVisible) {
-        container.style.display = "block";
-        btn.textContent = "Punkte‑Tabelle ausblenden";
-      } else {
-        container.style.display = "none";
-        btn.textContent = "Punkte‑Tabelle einblenden";
-      }
-    }
-
-    /* --- Logik --- */
 
     const MAX_TEILNEHMER = {
       "1a": 4,
@@ -344,6 +289,56 @@
       }
     };
 
+    function resetAll() {
+      document.getElementById("punkte").value = "";
+      document.getElementById("output").textContent = "Note: –";
+      document.getElementById("errorMsg").textContent = "";
+      document.getElementById("anzTi").value = "";
+      document.getElementById("anzTu").value = "";
+      document.getElementById("tableContainer").innerHTML = "";
+      document.getElementById("tableContainer").style.display = "none";
+      tableVisible = false;
+      document.getElementById("toggleTableBtn").textContent = "Punkte‑Tabelle einblenden";
+    }
+
+    function startWithCategory(kategorie) {
+      aktiveKategorie = kategorie;
+
+      document.getElementById("startscreen").style.display = "none";
+      document.getElementById("rechner").style.display = "block";
+
+      resetAll();
+
+      document.getElementById("disziplin").value = "1a";
+      document.getElementById("mixedInputs").style.display =
+        (kategorie === "mixed") ? "block" : "none";
+
+      generiereTabelle();
+    }
+
+    function goBack() {
+      document.getElementById("rechner").style.display = "none";
+      document.getElementById("startscreen").style.display = "block";
+      resetAll();
+      aktiveKategorie = null;
+    }
+
+    function toggleTable() {
+      tableVisible = !tableVisible;
+
+      const container = document.getElementById("tableContainer");
+      const btn = document.getElementById("toggleTableBtn");
+
+      if (tableVisible) {
+        container.style.display = "block";
+        btn.textContent = "Punkte‑Tabelle ausblenden";
+        generiereTabelle();
+      } else {
+        container.style.display = "none";
+        btn.textContent = "Punkte‑Tabelle einblenden";
+      }
+    }
+
     function liveCheck() {
       const dis = document.getElementById('disziplin').value;
       const F = parseInt(document.getElementById('anzTi').value || 0);
@@ -352,38 +347,42 @@
       const max = MAX_TEILNEHMER[dis];
       const min = MIN_TEILNEHMER[dis];
 
+      const err = document.getElementById("errorMsg");
+
       if (aktiveKategorie !== "mixed") {
-        document.getElementById("errorMsg").textContent = "";
+        err.textContent = "";
         return true;
       }
 
       if (total > max) {
-        document.getElementById("errorMsg").textContent = `Maximal erlaubt: ${max} Personen`;
+        err.textContent = `Maximal erlaubt: ${max} Personen`;
         return false;
       }
 
       if (total < min) {
-        document.getElementById("errorMsg").textContent = `Mindestens ${min} Personen erfassen`;
+        err.textContent = `Mindestens ${min} Personen erfassen`;
         return false;
       }
 
-      document.getElementById("errorMsg").textContent = "";
+      err.textContent = "";
       return true;
     }
 
     document.getElementById('anzTi').addEventListener('input', () => {
-      liveCheck();
-      generiereTabelle();
+      const ok = liveCheck();
+      if (tableVisible && ok) generiereTabelle();
+      if (!ok) document.getElementById("tableContainer").innerHTML = "";
     });
 
     document.getElementById('anzTu').addEventListener('input', () => {
-      liveCheck();
-      generiereTabelle();
+      const ok = liveCheck();
+      if (tableVisible && ok) generiereTabelle();
+      if (!ok) document.getElementById("tableContainer").innerHTML = "";
     });
 
     document.getElementById('disziplin').addEventListener('change', () => {
       document.getElementById("errorMsg").textContent = "";
-      generiereTabelle();
+      if (tableVisible) generiereTabelle();
     });
 
     function berechneNote() {
@@ -427,10 +426,76 @@
       const dis = document.getElementById('disziplin').value;
       const tableContainer = document.getElementById('tableContainer');
 
+      if (!aktiveKategorie) {
+        tableContainer.innerHTML = "";
+        return;
+      }
+
       let F = 0, M = 0;
       let minP, maxP;
 
       if (aktiveKategorie === "damen") {
         minP = PUNKTEBEREICHE[dis].damen[0];
         maxP = PUNKTEBEREICHE[dis].damen[1];
-      } else
+      } else if (aktiveKategorie === "herren") {
+        minP = PUNKTEBEREICHE[dis].herren[0];
+        maxP = PUNKTEBEREICHE[dis].herren[1];
+      } else {
+        F = parseInt(document.getElementById('anzTi').value || 0);
+        M = parseInt(document.getElementById('anzTu').value || 0);
+        const total = F + M;
+        const min = MIN_TEILNEHMER[dis];
+
+        if (total < min) {
+          tableContainer.innerHTML = `<div class='error'>Mindestens ${min} Personen erfassen</div>`;
+          return;
+        }
+
+        if (!liveCheck()) {
+          tableContainer.innerHTML = "<div class='error'>Ungültige Mixed‑Eingabe.</div>";
+          return;
+        }
+
+        minP = PUNKTEBEREICHE[dis].damen[0];
+        maxP = PUNKTEBEREICHE[dis].herren[1];
+      }
+
+      let html = "<table><tr><th>Punkte</th><th>Note</th></tr>";
+
+      for (let p = maxP; p >= minP; p--) {
+        let note;
+
+        if (aktiveKategorie === "damen") {
+          note = FORMELN[dis].damen(p);
+        } else if (aktiveKategorie === "herren") {
+          note = FORMELN[dis].herren(p);
+        } else {
+          const F2 = parseInt(document.getElementById('anzTi').value || 0);
+          const M2 = parseInt(document.getElementById('anzTu').value || 0);
+          const total2 = F2 + M2;
+          const min = MIN_TEILNEHMER[dis];
+
+          if (total2 < min) {
+            html += `<tr><td>${p}</td><td>Mindestens ${min} Personen erfassen</td></tr>`;
+            continue;
+          }
+
+          note = FORMELN[dis].mixed(p, F2, M2);
+        }
+
+        if (note < 0 || note > 10) continue;
+
+        note = Math.round(note * 100) / 100;
+        html += `<tr><td>${p}</td><td>${note.toFixed(2)}</td></tr>`;
+      }
+
+      html += "</table>";
+      tableContainer.innerHTML = html;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+</body>
+</html>
