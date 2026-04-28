@@ -195,7 +195,7 @@
         <!-- Mixed Inputs -->
         <div id="mixedInputs" style="display:none;">
           <fieldset>
-            <legend>Mixed‑Einstellungen</legend>
+            <legend>Mixed (Anzahl Personen erfassen)</legend>
             <div class="row">
               <div>
                 <label for="anzTi">Turnerinnen</label>
@@ -221,7 +221,7 @@
           Note: –
         </div>
 
-        <!-- NEW: Toggle Button -->
+        <!-- Toggle Button -->
         <button type="button" id="toggleTableBtn" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
 
         <div id="tableContainer" style="display:none;"></div>
@@ -233,6 +233,16 @@
   <script>
     let aktiveKategorie = null;
     let tableVisible = false;
+
+    /* Mindestpersonen pro Disziplin */
+    const MIN_TEILNEHMER = {
+      "1a": 4,
+      "1b": 6,
+      "2a": 5,
+      "2b": 6,
+      "3a": 6,
+      "3b": 6
+    };
 
     function startWithCategory(k) {
       aktiveKategorie = k;
@@ -265,7 +275,7 @@
       }
     }
 
-    /* --- Restliche Logik bleibt unverändert, nur Auto‑Update ergänzt --- */
+    /* --- Logik --- */
 
     const MAX_TEILNEHMER = {
       "1a": 4,
@@ -356,9 +366,21 @@
       const d = parseFloat(document.getElementById('punkte').value);
       const output = document.getElementById('output');
 
-      if (aktiveKategorie === "mixed" && !liveCheck()) {
-        output.textContent = "Note: –";
-        return;
+      if (aktiveKategorie === "mixed") {
+        const F = parseInt(document.getElementById('anzTi').value || 0);
+        const M = parseInt(document.getElementById('anzTu').value || 0);
+        const total = F + M;
+        const min = MIN_TEILNEHMER[dis];
+
+        if (total < min) {
+          output.textContent = `Note: Mindestens ${min} Personen erfassen`;
+          return;
+        }
+
+        if (!liveCheck()) {
+          output.textContent = "Note: –";
+          return;
+        }
       }
 
       let note;
@@ -392,6 +414,13 @@
       } else {
         F = parseInt(document.getElementById('anzTi').value || 0);
         M = parseInt(document.getElementById('anzTu').value || 0);
+        const total = F + M;
+        const min = MIN_TEILNEHMER[dis];
+
+        if (total < min) {
+          tableContainer.innerHTML = `<div class='error'>Mindestens ${min} Personen erfassen</div>`;
+          return;
+        }
 
         if (!liveCheck()) {
           tableContainer.innerHTML = "<div class='error'>Ungültige Mixed‑Eingabe.</div>";
@@ -407,9 +436,23 @@
       for (let p = maxP; p >= minP; p--) {
         let note;
 
-        if (aktiveKategorie === "damen") note = FORMELN[dis].damen(p);
-        else if (aktiveKategorie === "herren") note = FORMELN[dis].herren(p);
-        else note = FORMELN[dis].mixed(p, F, M);
+        if (aktiveKategorie === "damen") {
+          note = FORMELN[dis].damen(p);
+        } else if (aktiveKategorie === "herren") {
+          note = FORMELN[dis].herren(p);
+        } else {
+          const F = parseInt(document.getElementById('anzTi').value || 0);
+          const M = parseInt(document.getElementById('anzTu').value || 0);
+          const total = F + M;
+          const min = MIN_TEILNEHMER[dis];
+
+          if (total < min) {
+            html += `<tr><td>${p}</td><td>Mindestens ${min} Personen erfassen</td></tr>`;
+            continue;
+          }
+
+          note = FORMELN[dis].mixed(p, F, M);
+        }
 
         if (note < 0 || note > 10) continue;
 
@@ -422,9 +465,4 @@
     }
 
     // PWA Registrierung
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
-    }
-  </script>
-</body>
-</html>
+    if ("serviceWorker" in navigator
