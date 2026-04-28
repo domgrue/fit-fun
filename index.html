@@ -1,306 +1,366 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Fit+Fun Notenrechner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0066cc">
-  <style>
-    :root {
-      --primary:#0066cc;--primary-dark:#004c99;--bg:#f5f7fa;--card-bg:#fff;--radius:14px;--shadow:0 4px 12px rgba(0,0,0,0.08);
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    }
-    body{margin:0;padding:1rem;background:var(--bg);max-width:650px;margin-inline:auto;}
-    h1{font-size:1.6rem;margin-bottom:.5rem;font-weight:700;}
-    .card{background:var(--card-bg);padding:1.4rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1.4rem;}
-    button{background:var(--primary);color:#fff;border:none;padding:.75rem 1.2rem;font-size:1rem;border-radius:var(--radius);cursor:pointer;transition:.15s;width:100%;margin-top:.5rem;}
-    button:hover{background:var(--primary-dark);}
-    .btn-small{width:auto;padding:.55rem 1rem;font-size:.9rem;margin-bottom:1rem;}
-    .btn-row{display:flex;gap:.7rem;justify-content:center;margin-top:1.2rem;}
-    select,input[type=number]{width:100%;padding:.6rem;font-size:1rem;border-radius:var(--radius);border:1px solid #ccc;margin-top:.4rem;}
-    fieldset{border:none;padding:0;margin:0 0 1.2rem 0;}
-    legend{font-weight:600;margin-bottom:.4rem;}
-    .output{font-size:1.3rem;font-weight:700;padding:.9rem 1rem;border-radius:var(--radius);background:#e9f2ff;margin-top:.8rem;text-align:center;}
-    .error{color:#b00020;font-weight:600;margin-top:.3rem;}
-    table{width:100%;border-collapse:collapse;margin-top:1rem;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
-    th{background:var(--primary);color:#fff;padding:.7rem;text-align:left;font-size:1rem;}
-    tr:nth-child(even){background:#f0f6ff;}
-    tr:nth-child(odd){background:#fff;}
-    td{padding:.7rem;border-bottom:1px solid #e0e7f1;font-size:1rem;}
-    #startscreen{margin-top:3rem;text-align:center;}
-    #backBtn{background:#444;margin-bottom:1rem;}
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
+<meta charset="UTF-8">
+<title>Fit+Fun Notenrechner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --p:#d62828;      /* Sportliches Rot */
+  --pd:#a61e1e;     /* Dunkleres Rot */
+  --bg:#f7f7f7;
+  --card:#ffffff;
+  --r:14px;
+  --sh:0 4px 12px rgba(0,0,0,0.08);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
 }
-  </style>
+
+/* Layout */
+body{
+  margin:0;
+  padding:1rem;
+  background:var(--bg);
+  max-width:650px;
+  margin-inline:auto;
+}
+
+/* Cards */
+.card{
+  background:var(--card);
+  padding:1.2rem;
+  border-radius:var(--r);
+  box-shadow:var(--sh);
+  margin-bottom:1.2rem;
+}
+
+/* Headings */
+h1{
+  margin:0 0 .5rem 0;
+  font-size:1.6rem;
+  font-weight:700;
+  color:#222;
+}
+
+/* Buttons */
+button{
+  background:var(--p);
+  color:#fff;
+  border:none;
+  padding:.7rem 1rem;
+  font-size:1rem;
+  border-radius:var(--r);
+  cursor:pointer;
+  margin-top:.5rem;
+  width:100%;
+  transition:0.15s;
+}
+button:hover{ background:var(--pd); }
+
+.btn-small{
+  width:auto;
+  padding:.45rem .9rem;
+  font-size:.9rem;
+  margin-bottom:1rem;
+}
+
+.btn-row{
+  display:flex;
+  gap:.7rem;
+  justify-content:center;
+  margin-top:1rem;
+}
+
+/* Inputs */
+select,input[type=number]{
+  width:100%;
+  padding:.55rem;
+  font-size:1rem;
+  border-radius:var(--r);
+  border:1px solid #ccc;
+  margin-top:.35rem;
+}
+
+/* Fieldsets */
+legend{
+  font-weight:600;
+  margin-bottom:.3rem;
+}
+
+/* Output */
+.output{
+  font-size:1.3rem;
+  font-weight:700;
+  padding:.8rem;
+  border-radius:var(--r);
+  background:#ffe5e5;
+  color:#a61e1e;
+  margin-top:.7rem;
+  text-align:center;
+}
+
+/* Errors */
+.error{
+  color:#b00020;
+  font-weight:600;
+  margin-top:.25rem;
+}
+
+/* Table */
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:1rem;
+  background:#fff;
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:var(--sh);
+}
+th{
+  background:var(--p);
+  color:#fff;
+  padding:.6rem;
+  text-align:left;
+}
+tr:nth-child(even){ background:#ffeaea; }
+td{
+  padding:.6rem;
+  border-bottom:1px solid #e0e0e0;
+}
+
+/* Mixed fields under each other */
+.row{
+  display:flex;
+  flex-direction:column;
+  gap:.5rem;
+}
+</style>
 </head>
+
 <body>
-  <div id="startscreen">
-    <div class="card">
-      <h1>Fit+Fun Notenrechner</h1>
-      <p>Wähle deine Kategorie, um den passenden Rechner zu laden.</p>
-      <div class="btn-row">
-        <button onclick="startWithCategory('damen')">Damen</button>
-        <button onclick="startWithCategory('herren')">Herren</button>
-        <button onclick="startWithCategory('mixed')">Mixed</button>
-      </div>
+
+<!-- START -->
+<div id="startscreen">
+  <div class="card">
+    <h1>Fit+Fun Notenrechner</h1>
+    <p>Wähle deine Kategorie:</p>
+    <div class="btn-row">
+      <button onclick="start('damen')">Damen</button>
+      <button onclick="start('herren')">Herren</button>
+      <button onclick="start('mixed')">Mixed</button>
     </div>
   </div>
+</div>
 
-  <div id="rechner" style="display:none;">
-    <button id="backBtn" class="btn-small" onclick="goBack()">Kategorie wechseln</button>
-    <div class="card">
-      <h1>Fit+Fun Notenrechner</h1>
-      <p>Formeln gemäss Wertungstabelle Fit+Fun 2026 (ohne Gewähr).</p>
-    </div>
+<!-- RECHNER -->
+<div id="rechner" style="display:none;">
+  <button class="btn-small" onclick="back()">Kategorie wechseln</button>
 
-    <div class="card">
-      <form onsubmit="event.preventDefault();berechneNote();">
+  <div class="card">
+    <h1>Fit+Fun Notenrechner</h1>
+    <p>Formeln gemäss Wertungstabelle Fit+Fun 2026.</p>
+  </div>
+
+  <div class="card">
+    <form onsubmit="event.preventDefault();calc();">
+
+      <fieldset>
+        <legend>Disziplin</legend>
+        <select id="disziplin">
+          <option value="1a">FF1 – Aufgabe 1a: Fussball‑Staffetenstab</option>
+          <option value="1b">FF1 – Aufgabe 1b: Reif – Bälle</option>
+          <option value="2a">FF2 – Aufgabe 2a: Brettball – Moosgummiring</option>
+          <option value="2b">FF2 – Aufgabe 2b: 8er‑Ball</option>
+          <option value="3a">FF3 – Aufgabe 3a: Street Racket</option>
+          <option value="3b">FF3 – Aufgabe 3b: Moosgummi‑Intercross</option>
+        </select>
+      </fieldset>
+
+      <div id="mixedBox" style="display:none;">
         <fieldset>
-          <legend>Disziplin</legend>
-          <select id="disziplin" required>
-            <option value="1a">FF1 – Aufgabe 1a: Fussball-Staffetenstab</option>
-            <option value="1b">FF1 – Aufgabe 1b: Reif – Bälle</option>
-            <option value="2a">FF2 – Aufgabe 2a: Brettball – Moosgummiring</option>
-            <option value="2b">FF2 – Aufgabe 2b: 8er-Ball</option>
-            <option value="3a">FF3 – Aufgabe 3a: Street Racket</option>
-            <option value="3b">FF3 – Aufgabe 3b: Moosgummi-Intercross</option>
-          </select>
-        </fieldset>
-
-        <div id="mixedInputs" style="display:none;">
-          <fieldset>
-            <legend>Mixed (Anzahl Personen erfassen)</legend>
-            <div class="row">
-              <div>
-                <label for="anzTi">Turnerinnen</label>
-                <input type="number" id="anzTi" min="0" step="1">
-              </div>
-              <div>
-                <label for="anzTu">Turner</label>
-                <input type="number" id="anzTu" min="0" step="1">
-              </div>
+          <legend>Mixed (Anzahl Personen)</legend>
+          <div class="row">
+            <div>
+              <label>Turnerinnen</label>
+              <input id="f" type="number" min="0">
             </div>
-            <div id="errorMsg" class="error"></div>
-          </fieldset>
-        </div>
-
-        <fieldset>
-          <legend>Punkte</legend>
-          <input type="number" id="punkte" step="0.1" required>
+            <div>
+              <label>Turner</label>
+              <input id="m" type="number" min="0">
+            </div>
+          </div>
+          <div id="err" class="error"></div>
         </fieldset>
+      </div>
 
-        <button type="submit">Note berechnen</button>
-        <div id="output" class="output" aria-live="polite">Note: –</div>
+      <fieldset>
+        <legend>Punkte</legend>
+        <input id="punkte" type="number" step="0.1">
+      </fieldset>
 
-        <button type="button" id="toggleTableBtn" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
-        <div id="tableContainer" style="display:none;"></div>
-      </form>
-    </div>
+      <button type="submit">Note berechnen</button>
+      <div id="out" class="output">Note: –</div>
+
+      <button type="button" id="toggle" onclick="toggleTable()">Punkte‑Tabelle einblenden</button>
+      <div id="table" style="display:none;"></div>
+
+    </form>
   </div>
+</div>
 
 <script>
-let aktiveKategorie=null,tableVisible=false;
-const MIN_TEILNEHMER={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":6,"3b":6 };
-const MAX_TEILNEHMER={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":4,"3b":4 };
-const PUNKTEBEREICHE={
-  "1a":{damen:[46,81],herren:[54,98]},
-  "1b":{damen:[71,163],herren:[77,192]},
-  "2a":{damen:[122,189],herren:[136,230]},
-  "2b":{damen:[72,145],herren:[77,182]},
-  "3a":{damen:[105,163],herren:[118,198]},
-  "3b":{damen:[83,131],herren:[92,153]}
-};
-const FORMELN={
-  "1a":{damen:d=>(d-10)/7.1,herren:d=>(d-9)/8.9,mixed:(d,F,M)=>((F*(d-10)/7.1)+(M*(d-9)/8.9))/(F+M)},
-  "1b":{damen:d=>(d+21)/18.4,herren:d=>(d+38)/23,mixed:(d,F,M)=>((F*(d+21)/18.4)+(M*(d+38)/23))/(F+M)},
-  "2a":{damen:d=>(d-55)/13.4,herren:d=>(d-42)/18.8,mixed:(d,F,M)=>((F*(d-55)/13.4)+(M*(d-42)/18.8))/(F+M)},
-  "2b":{damen:d=>(d+1)/14.6,herren:d=>(d+28)/21,mixed:(d,F,M)=>((F*(d+1)/14.6)+(M*(d+28)/21))/(F+M)},
-  "3a":{damen:d=>(d-47)/11.6,herren:d=>(d-37)/16.1,mixed:(d,F,M)=>((F*(d-47)/11.6)+(M*(d-37)/16.1))/(F+M)},
-  "3b":{damen:d=>(d-34)/9.7,herren:d=>(d-31)/12.2,mixed:(d,F,M)=>((F*(d-34)/9.7)+(M*(d-31)/12.2))/(F+M)}
+let kat=null,tableVisible=false;
+
+const MIN={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":6,"3b":6 };
+const MAX={ "1a":4,"1b":6,"2a":5,"2b":6,"3a":4,"3b":4 };
+
+const FORM={
+ "1a":{d:d=>(d-10)/7.1,h:d=>(d-9)/8.9,m:(d,F,M)=>((F*(d-10)/7.1)+(M*(d-9)/8.9))/(F+M)},
+ "1b":{d:d=>(d+21)/18.4,h:d=>(d+38)/23,m:(d,F,M)=>((F*(d+21)/18.4)+(M*(d+38)/23))/(F+M)},
+ "2a":{d:d=>(d-55)/13.4,h:d=>(d-42)/18.8,m:(d,F,M)=>((F*(d-55)/13.4)+(M*(d-42)/18.8))/(F+M)},
+ "2b":{d:d=>(d+1)/14.6,h:d=>(d+28)/21,m:(d,F,M)=>((F*(d+1)/14.6)+(M*(d+28)/21))/(F+M)},
+ "3a":{d:d=>(d-47)/11.6,h:d=>(d-37)/16.1,m:(d,F,M)=>((F*(d-47)/11.6)+(M*(d-37)/16.1))/(F+M)},
+ "3b":{d:d=>(d-34)/9.7,h:d=>(d-31)/12.2,m:(d,F,M)=>((F*(d-34)/9.7)+(M*(d-31)/12.2))/(F+M)}
 };
 
-function resetAll(){
-  document.getElementById("punkte").value="";
-  document.getElementById("output").textContent="Note: –";
-  document.getElementById("errorMsg").textContent="";
-  document.getElementById("anzTi").value="";
-  document.getElementById("anzTu").value="";
-  document.getElementById("tableContainer").innerHTML="";
-  document.getElementById("tableContainer").style.display="none";
-  tableVisible=false;
-  document.getElementById("toggleTableBtn").textContent="Punkte‑Tabelle einblenden";
+function reset(){
+ document.getElementById("punkte").value="";
+ document.getElementById("out").textContent="Note: –";
+ document.getElementById("err").textContent="";
+ document.getElementById("f").value="";
+ document.getElementById("m").value="";
+ document.getElementById("table").innerHTML="";
+ document.getElementById("table").style.display="none";
+ tableVisible=false;
+ document.getElementById("toggle").textContent="Punkte‑Tabelle einblenden";
 }
 
-function startWithCategory(kat){
-  aktiveKategorie=kat;
-  document.getElementById("startscreen").style.display="none";
-  document.getElementById("rechner").style.display="block";
-  resetAll();
-  document.getElementById("disziplin").value="1a";
-  document.getElementById("mixedInputs").style.display=(kat==="mixed")?"block":"none";
-  generiereTabelle();
+function start(k){
+ kat=k;
+ document.getElementById("startscreen").style.display="none";
+ document.getElementById("rechner").style.display="block";
+ reset();
+ document.getElementById("disziplin").value="1a";
+ document.getElementById("mixedBox").style.display=(k==="mixed")?"block":"none";
 }
 
-function goBack(){
-  document.getElementById("rechner").style.display="none";
-  document.getElementById("startscreen").style.display="block";
-  resetAll();
-  aktiveKategorie=null;
+function back(){
+ document.getElementById("rechner").style.display="none";
+ document.getElementById("startscreen").style.display="block";
+ reset();
+ kat=null;
 }
 
 function toggleTable(){
-  tableVisible=!tableVisible;
-  const c=document.getElementById("tableContainer");
-  const b=document.getElementById("toggleTableBtn");
-  if(tableVisible){
-    c.style.display="block";
-    b.textContent="Punkte‑Tabelle ausblenden";
-    generiereTabelle();
-  }else{
-    c.style.display="none";
-    b.textContent="Punkte‑Tabelle einblenden";
-  }
+ tableVisible=!tableVisible;
+ const t=document.getElementById("table");
+ const b=document.getElementById("toggle");
+ if(tableVisible){ t.style.display="block"; b.textContent="Punkte‑Tabelle ausblenden"; genTable(); }
+ else{ t.style.display="none"; b.textContent="Punkte‑Tabelle einblenden"; }
 }
 
-function liveCheck() {
-  const dis = document.getElementById('disziplin').value;
-  const F = document.getElementById('anzTi').value;
-  const M = document.getElementById('anzTu').value;
-  const err = document.getElementById("errorMsg");
+function mixedOK(){
+ if(kat!=="mixed") return true;
 
-  // Nur Mixed prüfen
-  if (aktiveKategorie !== "mixed") {
-    err.textContent = "";
-    return true;
-  }
+ const F=document.getElementById("f").value;
+ const M=document.getElementById("m").value;
+ const err=document.getElementById("err");
+ const dis=document.getElementById("disziplin").value;
 
-  // Solange eines der Felder leer ist → keine Fehlermeldung
-  if (F === "" || M === "") {
-    err.textContent = "";
-    return false;
-  }
+ /* WICHTIG:
+    Solange eines der Felder leer ist → KEINE Fehlermeldung */
+ if(F==="" || M===""){
+   err.textContent="";
+   return false;
+ }
 
-  const f = parseInt(F);
-  const m = parseInt(M);
-  const total = f + m;
+ const f=parseInt(F);
+ const m=parseInt(M);
+ const total=f+m;
 
-  const max = MAX_TEILNEHMER[dis];
-  const min = MIN_TEILNEHMER[dis];
+ if(total>MAX[dis]){ err.textContent=`Maximal ${MAX[dis]} Personen`; return false; }
+ if(total<MIN[dis]){ err.textContent=`Mindestens ${MIN[dis]} Personen erfassen`; return false; }
 
-  if (total > max) {
-    err.textContent = `Maximal erlaubt: ${max} Personen`;
-    return false;
-  }
-
-  if (total < min) {
-    err.textContent = `Mindestens ${min} Personen erfassen`;
-    return false;
-  }
-
-  err.textContent = "";
-  return true;
+ err.textContent="";
+ return true;
 }
 
+document.getElementById("f").addEventListener("input",()=>{ mixedOK(); if(tableVisible) genTable(); });
+document.getElementById("m").addEventListener("input",()=>{ mixedOK(); if(tableVisible) genTable(); });
+document.getElementById("disziplin").addEventListener("change",()=>{ reset(); if(tableVisible) genTable(); });
 
-document.getElementById("anzTi").addEventListener("input",()=>{
-  const ok=liveCheck();
-  if(tableVisible&&ok) generiereTabelle();
-  if(!ok) document.getElementById("tableContainer").innerHTML="";
-});
-document.getElementById("anzTu").addEventListener("input",()=>{
-  const ok=liveCheck();
-  if(tableVisible&&ok) generiereTabelle();
-  if(!ok) document.getElementById("tableContainer").innerHTML="";
-});
-document.getElementById("disziplin").addEventListener("change",()=>{
-  resetAll();
-  if(tableVisible) generiereTabelle();
-});
+function calc(){
+ const dis=document.getElementById("disziplin").value;
+ const d=parseFloat(document.getElementById("punkte").value);
+ const out=document.getElementById("out");
 
-function berechneNote(){
-  const dis=document.getElementById("disziplin").value;
-  const d=parseFloat(document.getElementById("punkte").value);
-  const out=document.getElementById("output");
+ if(kat==="mixed"){
+   let F=document.getElementById("f").value;
+   let M=document.getElementById("m").value;
 
-  if(aktiveKategorie==="mixed"){
-    const F=parseInt(document.getElementById("anzTi").value||0);
-    const M=parseInt(document.getElementById("anzTu").value||0);
-    const total=F+M;
-    const min=MIN_TEILNEHMER[dis];
-    if(total<min){
-      out.textContent=`Note: Mindestens ${min} Personen erfassen`;
-      return;
-    }
-    if(!liveCheck()){
-      out.textContent="Note: –";
-      return;
-    }
-  }
+   if(F==="") F=0;
+   if(M==="") M=0;
 
-  let note;
-  if(aktiveKategorie==="damen") note=FORMELN[dis].damen(d);
-  else if(aktiveKategorie==="herren") note=FORMELN[dis].herren(d);
-  else{
-    const F=parseInt(document.getElementById("anzTi").value||0);
-    const M=parseInt(document.getElementById("anzTu").value||0);
-    note=FORMELN[dis].mixed(d,F,M);
-  }
-  out.textContent=`Note: ${(Math.round(note*100)/100).toFixed(2)}`;
+   F=parseInt(F); M=parseInt(M);
+   const total=F+M;
+
+   if(total<MIN[dis]){ out.textContent=`Note: Mindestens ${MIN[dis]} Personen erfassen`; return; }
+   if(total>MAX[dis]){ out.textContent=`Note: Maximal ${MAX[dis]} Personen`; return; }
+
+   const n=FORM[dis].m(d,F,M);
+   out.textContent=`Note: ${n.toFixed(2)}`;
+   return;
+ }
+
+ if(kat==="damen") out.textContent=`Note: ${FORM[dis].d(d).toFixed(2)}`;
+ else out.textContent=`Note: ${FORM[dis].h(d).toFixed(2)}`;
 }
 
-function generiereTabelle(){
-  const dis=document.getElementById("disziplin").value;
-  const c=document.getElementById("tableContainer");
-  if(!aktiveKategorie){c.innerHTML="";return;}
+function genTable(){
+ const dis=document.getElementById("disziplin").value;
+ const t=document.getElementById("table");
 
-  let minP,maxP;
-  if(aktiveKategorie==="damen"){
-    [minP,maxP]=PUNKTEBEREICHE[dis].damen;
-  }else if(aktiveKategorie==="herren"){
-    [minP,maxP]=PUNKTEBEREICHE[dis].herren;
-  }else{
-    const F=parseInt(document.getElementById("anzTi").value||0);
-    const M=parseInt(document.getElementById("anzTu").value||0);
-    const total=F+M;
-    const min=MIN_TEILNEHMER[dis];
-    if(total<min){
-      c.innerHTML=`<div class="error">Mindestens ${min} Personen erfassen</div>`;
-      return;
-    }
-    if(!liveCheck()){
-      c.innerHTML=`<div class="error">Ungültige Mixed‑Eingabe.</div>`;
-      return;
-    }
-    minP=PUNKTEBEREICHE[dis].damen[0];
-    maxP=PUNKTEBEREICHE[dis].herren[1];
-  }
+ let minP,maxP;
 
-  let html="<table><tr><th>Punkte</th><th>Note</th></tr>";
-  for(let p=maxP;p>=minP;p--){
-    let note;
-    if(aktiveKategorie==="damen") note=FORMELN[dis].damen(p);
-    else if(aktiveKategorie==="herren") note=FORMELN[dis].herren(p);
-    else{
-      const F=parseInt(document.getElementById("anzTi").value||0);
-      const M=parseInt(document.getElementById("anzTu").value||0);
-      const total=F+M;
-      const min=MIN_TEILNEHMER[dis];
-      if(total<min){
-        html+=`<tr><td>${p}</td><td>Mindestens ${min} Personen erfassen</td></tr>`;
-        continue;
-      }
-      note=FORMELN[dis].mixed(p,F,M);
-    }
-    if(note<0||note>10) continue;
-    note=Math.round(note*100)/100;
-    html+=`<tr><td>${p}</td><td>${note.toFixed(2)}</td></tr>`;
-  }
-  html+="</table>";
-  c.innerHTML=html;
+ const PB={
+   "1a":{d:[46,81],h:[54,98]},
+   "1b":{d:[71,163],h:[77,192]},
+   "2a":{d:[122,189],h:[136,230]},
+   "2b":{d:[72,145],h:[77,182]},
+   "3a":{d:[105,163],h:[118,198]},
+   "3b":{d:[83,131],h:[92,153]}
+ };
+
+ if(kat==="damen"){ minP=PB[dis].d[0]; maxP=PB[dis].d[1]; }
+ else if(kat==="herren"){ minP=PB[dis].h[0]; maxP=PB[dis].h[1]; }
+ else{
+   let F=document.getElementById("f").value;
+   let M=document.getElementById("m").value;
+   if(F===""||M===""){ t.innerHTML=""; return; }
+   F=parseInt(F); M=parseInt(M);
+   const total=F+M;
+   if(total<MIN[dis]){ t.innerHTML=`<div class='error'>Mindestens ${MIN[dis]} Personen erfassen</div>`; return; }
+   if(total>MAX[dis]){ t.innerHTML=`<div class='error'>Maximal ${MAX[dis]} Personen</div>`; return; }
+   minP=PB[dis].d[0];
+   maxP=PB[dis].h[1];
+ }
+
+ let html="<table><tr><th>Punkte</th><th>Note</th></tr>";
+ for(let p=maxP;p>=minP;p--){
+   let n;
+   if(kat==="damen") n=FORM[dis].d(p);
+   else if(kat==="herren") n=FORM[dis].h(p);
+   else{
+     const F=parseInt(document.getElementById("f").value||0);
+     const M=parseInt(document.getElementById("m").value||0);
+     n=FORM[dis].m(p,F,M);
+   }
+   if(n>=0&&n<=10) html+=`<tr><td>${p}</td><td>${n.toFixed(2)}</td></tr>`;
+ }
+ html+="</table>";
+ t.innerHTML=html;
 }
 </script>
+
 </body>
 </html>
