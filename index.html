@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fit+Fun Notenrechner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0066cc">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      padding: 1rem;
+      max-width: 600px;
+      margin-inline: auto;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem 1rem;
+      margin-bottom: 1rem;
+    }
+    legend {
+      padding: 0 0.25rem;
+      font-weight: 600;
+    }
+    label {
+      display: block;
+      margin: 0.35rem 0;
+    }
+    select, input[type="number"], button {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+      border-radius: 0.4rem;
+      border: 1px solid #bbb;
+    }
+    .row {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .row > div {
+      flex: 1;
+    }
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0;
+    }
+    button {
+      margin-top: 0.5rem;
+      background: #0066cc;
+      color: white;
+      border: none;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .output {
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      background: #f3f3f3;
+      margin-top: 0.5rem;
+    }
+    .error {
+      color: #b00020;
+      font-weight: 600;
+      margin-top: 0.3rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.4rem;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fit+Fun Notenrechner</h1>
+  <p>Formeln gemäss Wertungstabelle Fit+Fun 2026. Noten werden auf zwei Dezimalstellen gerundet.</p>
+
+  <form id="notenForm" onsubmit="event.preventDefault(); berechneNote();">
+    <fieldset>
+      <legend>Disziplin</legend>
+      <label for="disziplin">Aufgabe / Disziplin</label>
+      <select id="disziplin" required>
+        <option value="1a">FF1 – Aufgabe 1a: Fussball-Staffetenstab</option>
+        <option value="1b">FF1 – Aufgabe 1b: Reif – Bälle</option>
+        <option value="2a">FF2 – Aufgabe 2a: Brettball – Moosgummiring</option>
+        <option value="2b">FF2 – Aufgabe 2b: 8er-Ball</option>
+        <option value="3a">FF3 – Aufgabe 3a: Street Racket</option>
+        <option value="3b">FF3 – Aufgabe 3b: Moosgummi-Intercross</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Gruppe</legend>
+      <div class="radio-group">
+        <label><input type="radio" name="gruppe" value="damen" checked /> Nur Damen</label>
+        <label><input type="radio" name="gruppe" value="herren" /> Nur Herren</label>
+        <label><input type="radio" name="gruppe" value="mixed" /> Mixed (Ti / Tu)</label>
+      </div>
+
+      <div id="mixedInputs" style="margin-top:0.5rem; display:none;">
+        <div class="row">
+          <div>
+            <label for="anzTi">Turnerinnen (Ti)</label>
+            <input type="number" id="anzTi" min="0" step="1" />
+          </div>
+          <div>
+            <label for="anzTu">Turner (Tu)</label>
+            <input type="number" id="anzTu" min="0" step="1" />
+          </div>
+        </div>
+        <div id="errorMsg" class="error"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Punkte</legend>
+      <label for="punkte">Erreichte Punkte (d)</label>
+      <input type="number" id="punkte" step="0.1" required />
+    </fieldset>
+
+    <button type="submit">Note berechnen</button>
+
+    <div id="output" class="output" aria-live="polite">
+      Note: –
+    </div>
+
+    <button type="button" id="showTableBtn" style="margin-top:1rem;">Punkte‑Tabelle anzeigen</button>
+    <div id="tableContainer"></div>
+  </form>
+
+  <script>
+    const gruppeRadios = document.querySelectorAll('input[name="gruppe"]');
+    const mixedInputs = document.getElementById('mixedInputs');
+    const errorMsg = document.getElementById('errorMsg');
+
+    const MAX_TEILNEHMER = {
+      "1a": 4,
+      "1b": 6,
+      "2a": 5,
+      "2b": 6,
+      "3a": 4,
+      "3b": 4
+    };
+
+    const PUNKTEBEREICHE = {
+      "1a": { damen: [46, 81], herren: [54, 98] },
+      "1b": { damen: [71, 163], herren: [77, 192] },
+      "2a": { damen: [122, 189], herren: [136, 230] },
+      "2b": { damen: [72, 145], herren: [77, 182] },
+      "3a": { damen: [105, 163], herren: [118, 198] },
+      "3b": { damen: [83, 131], herren: [92, 153] }
+    };
+
+    const FORMELN = {
+      "1a": {
+        damen: d => (d - 10) / 7.1,
+        herren: d => (d - 9) / 8.9,
+        mixed: (d, F, M) => ((F*(d-10)/7.1)+(M*(d-9)/8.9))/(F+M)
+      },
+      "1b": {
+        damen: d => (d + 21) / 18.4,
+        herren: d => (d + 38) / 23,
+        mixed: (d, F, M) => ((F*(d+21)/18.4)+(M*(d+38)/23))/(F+M)
+      },
+      "2a": {
+        damen: d => (d - 55) / 13.4,
+        herren: d => (d - 42) / 18.8,
+        mixed: (d, F, M) => ((F*(d-55)/13.4)+(M*(d-42)/18.8))/(F+M)
+      },
+      "2b": {
+        damen: d => (d + 1) / 14.6,
+        herren: d => (d + 28) / 21,
+        mixed: (d, F, M) => ((F*(d+1)/14.6)+(M*(d+28)/21))/(F+M)
+      },
+      "3a": {
+        damen: d => (d - 47) / 11.6,
+        herren: d => (d - 37) / 16.1,
+        mixed: (d, F, M) => ((F*(d-47)/11.6)+(M*(d-37)/16.1))/(F+M)
+      },
+      "3b": {
+        damen: d => (d - 34) / 9.7,
+        herren: d => (d - 31) / 12.2,
+        mixed: (d, F, M) => ((F*(d-34)/9.7)+(M*(d-31)/12.2))/(F+M)
+      }
+    };
+
+    gruppeRadios.forEach(r => {
+      r.addEventListener('change', () => {
+        mixedInputs.style.display = r.value === 'mixed' ? 'block' : 'none';
+        errorMsg.textContent = "";
+      });
+    });
+
+    function liveCheck() {
+      const dis = document.getElementById('disziplin').value;
+      const F = parseInt(document.getElementById('anzTi').value || 0);
+      const M = parseInt(document.getElementById('anzTu').value || 0);
+      const total = F + M;
+      const max = MAX_TEILNEHMER[dis];
+
+      if (total > max) {
+        errorMsg.textContent = `Maximal erlaubt: ${max} Personen`;
+        return false;
+      }
+
+      errorMsg.textContent = "";
+      return true;
+    }
+
+    document.getElementById('anzTi').addEventListener('input', liveCheck);
+    document.getElementById('anzTu').addEventListener('input', liveCheck);
+    document.getElementById('disziplin').addEventListener('change', liveCheck);
+
+    function berechneNote() {
+      const dis = document.getElementById('disziplin').value;
+      const d = parseFloat(document.getElementById('punkte').value);
+      const gruppe = document.querySelector('input[name="gruppe"]:checked').value;
+      const output = document.getElementById('output');
+
+      if (gruppe === "mixed" && !liveCheck()) {
+        output.textContent = "Note: –";
+        return;
+      }
+
+      let note;
+
+      if (gruppe === "damen") {
+        note = FORMELN[dis].damen(d);
+      } else if (gruppe === "herren") {
+        note = FORMELN[dis].herren(d);
+      } else {
+        const F = parseInt(document.getElementById('anzTi').value || 0);
+        const M = parseInt(document.getElementById('anzTu').value || 0);
+        note = FORMELN[dis].mixed(d, F, M);
+      }
+
+      output.textContent = `Note: ${(Math.round(note * 100) / 100).toFixed(2)}`;
+    }
+
+    function generiereTabelle() {
+      const dis = document.getElementById('disziplin').value;
+      const gruppe = document.querySelector('input[name="gruppe"]:checked').value;
+      const tableContainer = document.getElementById('tableContainer');
+
+      let F = 0, M = 0;
+      let minP, maxP;
+
+      if (gruppe === "damen") {
+        minP = PUNKTEBEREICHE[dis].damen[0];
+        maxP = PUNKTEBEREICHE[dis].damen[1];
+      } else if (gruppe === "herren") {
+        minP = PUNKTEBEREICHE[dis].herren[0];
+        maxP = PUNKTEBEREICHE[dis].herren[1];
+      } else {
+        F = parseInt(document.getElementById('anzTi').value || 0);
+        M = parseInt(document.getElementById('anzTu').value || 0);
+
+        if (!liveCheck()) {
+          tableContainer.innerHTML = "<div class='error'>Ungültige Mixed‑Eingabe.</div>";
+          return;
+        }
+
+        minP = PUNKTEBEREICHE[dis].damen[0];
+        maxP = PUNKTEBEREICHE[dis].herren[1];
+      }
+
+      let html = "<table><tr><th>Punkte</th><th>Note</th></tr>";
+
+      for (let p = maxP; p >= minP; p--) {
+        let note;
+
+        if (gruppe === "damen") note = FORMELN[dis].damen(p);
+        else if (gruppe === "herren") note = FORMELN[dis].herren(p);
+        else note = FORMELN[dis].mixed(p, F, M);
+
+        if (note < 0 || note > 10) continue;
+
+        note = Math.round(note * 100) / 100;
+        html += `<tr><td>${p}</td><td>${note.toFixed(2)}</td></tr>`;
+      }
+
+      html += "</table>";
+      tableContainer.innerHTML = html;
+    }
+
+    document.getElementById('showTableBtn').addEventListener('click', generiereTabelle);
+
+    // PWA Service Worker Registrierung
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+</body>
+</html>
