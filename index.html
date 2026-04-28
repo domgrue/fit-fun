@@ -107,6 +107,7 @@
       margin-top: 0.3rem;
     }
 
+    /* Optimierte Tabelle */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -120,13 +121,23 @@
     th {
       background: var(--primary);
       color: white;
-      padding: 0.6rem;
+      padding: 0.7rem;
       text-align: left;
+      font-size: 1rem;
+    }
+
+    tr:nth-child(even) {
+      background: #f0f6ff;
+    }
+
+    tr:nth-child(odd) {
+      background: #ffffff;
     }
 
     td {
-      padding: 0.6rem;
-      border-bottom: 1px solid #eee;
+      padding: 0.7rem;
+      border-bottom: 1px solid #e0e7f1;
+      font-size: 1rem;
     }
 
     #startscreen {
@@ -163,7 +174,7 @@
 
     <div class="card">
       <h1>Fit+Fun Notenrechner</h1>
-      <p>Formeln gemäss Wertungstabelle Fit+Fun 2026.</p>
+      <p>Formeln gemäss Wertungstabelle Fit+Fun 2026 (ohne Gewähr).</p>
     </div>
 
     <div class="card">
@@ -187,11 +198,11 @@
             <legend>Mixed‑Einstellungen</legend>
             <div class="row">
               <div>
-                <label for="anzTi">Turnerinnen (Ti)</label>
+                <label for="anzTi">Turnerinnen</label>
                 <input type="number" id="anzTi" min="0" step="1" />
               </div>
               <div>
-                <label for="anzTu">Turner (Tu)</label>
+                <label for="anzTu">Turner</label>
                 <input type="number" id="anzTu" min="0" step="1" />
               </div>
             </div>
