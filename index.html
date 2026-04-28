@@ -9,91 +9,129 @@
 
   <style>
     :root {
+      --primary: #0066cc;
+      --primary-dark: #004c99;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --radius: 14px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color-scheme: light dark;
     }
+
     body {
       margin: 0;
       padding: 1rem;
-      max-width: 600px;
+      background: var(--bg);
+      max-width: 650px;
       margin-inline: auto;
     }
+
     h1 {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       margin-bottom: 0.5rem;
+      font-weight: 700;
     }
-    fieldset {
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 0.75rem 1rem 1rem;
-      margin-bottom: 1rem;
+
+    .card {
+      background: var(--card-bg);
+      padding: 1.4rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 1.4rem;
     }
-    legend {
-      padding: 0 0.25rem;
-      font-weight: 600;
-    }
-    label {
-      display: block;
-      margin: 0.35rem 0;
-    }
-    select, input[type="number"], button {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      box-sizing: border-box;
-      border-radius: 0.4rem;
-      border: 1px solid #bbb;
-    }
-    .row {
-      display: flex;
-      gap: 0.75rem;
-    }
-    .row > div {
-      flex: 1;
-    }
+
     button {
-      margin-top: 0.5rem;
-      background: #0066cc;
+      background: var(--primary);
       color: white;
       border: none;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .output {
-      font-size: 1.2rem;
-      font-weight: 600;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      background: #f3f3f3;
+      padding: 0.75rem 1.2rem;
+      font-size: 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: 0.15s;
+      width: 100%;
       margin-top: 0.5rem;
     }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-small {
+      width: auto;
+      padding: 0.55rem 1rem;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-top: 1.2rem;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid #ccc;
+      margin-top: 0.4rem;
+    }
+
+    fieldset {
+      border: none;
+      padding: 0;
+      margin: 0 0 1.2rem 0;
+    }
+
+    legend {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .output {
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius);
+      background: #e9f2ff;
+      margin-top: 0.8rem;
+      text-align: center;
+    }
+
     .error {
       color: #b00020;
       font-weight: 600;
       margin-top: 0.3rem;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
+      background: white;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
-    th, td {
-      padding: 0.4rem;
-      border-bottom: 1px solid #ccc;
+
+    th {
+      background: var(--primary);
+      color: white;
+      padding: 0.6rem;
       text-align: left;
     }
 
-    /* Startscreen */
-    #startscreen {
-      text-align: center;
-      margin-top: 3rem;
+    td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #eee;
     }
-    #startscreen button {
-      width: auto;
-      padding: 0.7rem 1.2rem;
-      margin: 0.4rem;
-      font-size: 1.1rem;
+
+    #startscreen {
+      margin-top: 3rem;
+      text-align: center;
     }
 
     #backBtn {
@@ -106,70 +144,77 @@
 
   <!-- STARTSCREEN -->
   <div id="startscreen">
-    <h1>Fit+Fun Notenrechner</h1>
-    <p>Wähle deine Kategorie, um den passenden Rechner zu laden.</p>
+    <div class="card">
+      <h1>Fit+Fun Notenrechner</h1>
+      <p>Wähle deine Kategorie, um den passenden Rechner zu laden.</p>
 
-    <button onclick="startWithCategory('damen')">Damen</button>
-    <button onclick="startWithCategory('herren')">Herren</button>
-    <button onclick="startWithCategory('mixed')">Mixed</button>
+      <div class="btn-row">
+        <button onclick="startWithCategory('damen')">Damen</button>
+        <button onclick="startWithCategory('herren')">Herren</button>
+        <button onclick="startWithCategory('mixed')">Mixed</button>
+      </div>
+    </div>
   </div>
 
   <!-- RECHNER -->
   <div id="rechner" style="display:none;">
 
-    <button id="backBtn" onclick="goBack()">Kategorie wechseln</button>
+    <button id="backBtn" class="btn-small" onclick="goBack()">Kategorie wechseln</button>
 
-    <h1>Fit+Fun Notenrechner</h1>
-    <p>Formeln gemäss Wertungstabelle Fit+Fun 2026.</p>
+    <div class="card">
+      <h1>Fit+Fun Notenrechner</h1>
+      <p>Formeln gemäss Wertungstabelle Fit+Fun 2026.</p>
+    </div>
 
-    <form id="notenForm" onsubmit="event.preventDefault(); berechneNote();">
+    <div class="card">
+      <form id="notenForm" onsubmit="event.preventDefault(); berechneNote();">
 
-      <fieldset>
-        <legend>Disziplin</legend>
-        <label for="disziplin">Aufgabe / Disziplin</label>
-        <select id="disziplin" required>
-          <option value="1a">FF1 – Aufgabe 1a: Fussball-Staffetenstab</option>
-          <option value="1b">FF1 – Aufgabe 1b: Reif – Bälle</option>
-          <option value="2a">FF2 – Aufgabe 2a: Brettball – Moosgummiring</option>
-          <option value="2b">FF2 – Aufgabe 2b: 8er-Ball</option>
-          <option value="3a">FF3 – Aufgabe 3a: Street Racket</option>
-          <option value="3b">FF3 – Aufgabe 3b: Moosgummi-Intercross</option>
-        </select>
-      </fieldset>
-
-      <!-- Mixed Inputs -->
-      <div id="mixedInputs" style="margin-top:0.5rem; display:none;">
         <fieldset>
-          <legend>Mixed‑Einstellungen</legend>
-          <div class="row">
-            <div>
-              <label for="anzTi">Turnerinnen</label>
-              <input type="number" id="anzTi" min="0" step="1" />
-            </div>
-            <div>
-              <label for="anzTu">Turner</label>
-              <input type="number" id="anzTu" min="0" step="1" />
-            </div>
-          </div>
-          <div id="errorMsg" class="error"></div>
+          <legend>Disziplin</legend>
+          <select id="disziplin" required>
+            <option value="1a">FF1 – Aufgabe 1a: Fussball-Staffetenstab</option>
+            <option value="1b">FF1 – Aufgabe 1b: Reif – Bälle</option>
+            <option value="2a">FF2 – Aufgabe 2a: Brettball – Moosgummiring</option>
+            <option value="2b">FF2 – Aufgabe 2b: 8er-Ball</option>
+            <option value="3a">FF3 – Aufgabe 3a: Street Racket</option>
+            <option value="3b">FF3 – Aufgabe 3b: Moosgummi-Intercross</option>
+          </select>
         </fieldset>
-      </div>
 
-      <fieldset>
-        <legend>Punkte</legend>
-        <label for="punkte">Erreichte Punkte</label>
-        <input type="number" id="punkte" step="0.1" required />
-      </fieldset>
+        <!-- Mixed Inputs -->
+        <div id="mixedInputs" style="display:none;">
+          <fieldset>
+            <legend>Mixed‑Einstellungen</legend>
+            <div class="row">
+              <div>
+                <label for="anzTi">Turnerinnen</label>
+                <input type="number" id="anzTi" min="0" step="1" />
+              </div>
+              <div>
+                <label for="anzTu">Turner</label>
+                <input type="number" id="anzTu" min="0" step="1" />
+              </div>
+            </div>
+            <div id="errorMsg" class="error"></div>
+          </fieldset>
+        </div>
 
-      <button type="submit">Note berechnen</button>
+        <fieldset>
+          <legend>Punkte</legend>
+          <input type="number" id="punkte" step="0.1" required />
+        </fieldset>
 
-      <div id="output" class="output" aria-live="polite">
-        Note: –
-      </div>
+        <button type="submit">Note berechnen</button>
 
-      <button type="button" id="showTableBtn" style="margin-top:1rem;">Punkte‑Tabelle anzeigen</button>
-      <div id="tableContainer"></div>
-    </form>
+        <div id="output" class="output" aria-live="polite">
+          Note: –
+        </div>
+
+        <button type="button" id="showTableBtn">Punkte‑Tabelle anzeigen</button>
+        <div id="tableContainer"></div>
+
+      </form>
+    </div>
   </div>
 
   <script>
